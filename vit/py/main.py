@@ -8,6 +8,8 @@ from utilities import train_model, plot_best_losses
 import argparse
 import numpy as np
 import os
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
 
@@ -60,15 +62,22 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'best_model.pt')))
     model.eval()
     test_losses = []
+    y_true = []
+    y_hat = [] 
     loss_function = torch.nn.MSELoss()
     with torch.no_grad():
         for X, y in test_loader:
             X = X.to(device)
             y = y.unsqueeze(1).float().to(device)
             y_pred = model(X)
+            y_true.extend(y.cpu().numpy())
+            y_hat.extend(y_pred.cpu().numpy())
             loss = loss_function(y_pred, y)
             test_losses.append(loss.item())
     test_loss = np.mean(test_losses)
+    test_mse = mean_squared_error(y_true, y_hat)
+    test_rmse = np.sqrt(test_mse)
+    test_r2 = r2_score(y_true, y_hat)
 
     loss_lists = {'train_losses': avg_train_losses, 
                   'val_losses' : avg_val_losses,
@@ -79,16 +88,24 @@ if __name__ == "__main__":
     train_rmse = sqrt(train_mse)
     val_mse = best_val_loss
     val_rmse = sqrt(val_mse)
-    test_mse = test_loss
-    test_rmse = sqrt(test_mse)
 
     print(f"Train MSE: {train_mse}, Train RMSE: {train_rmse}")
     print(f"Val MSE: {val_mse}, Val RMSE: {val_rmse}")
-    print(f"Test MSE: {test_mse}, Test RMSE: {test_rmse}")
+    print(f"Test MSE: {test_mse}, Test RMSE: {test_rmse}, Test R^2 score: {test_r2:.4f}")
 
     plot_best_losses(loss_lists['train_losses'], 
                      loss_lists['val_losses'], 
                      loss_lists['test_loss'], 
                      loss_lists['early_stop_epoch'])
 
+    def plot_regression(y_true, y_pred):
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_true, y_pred, alpha=0.5)
+        plt.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], 'r--', lw=2)
+        plt.xlabel('True Values')
+        plt.ylabel('Predicted Values')
+        plt.title('Regression Plot')
+        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'regression_plot.png'), dpi=300, bbox_inches='tight')
+        plt.show()
 
+    plot_regression(y_true, y_hat)
