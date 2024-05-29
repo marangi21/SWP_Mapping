@@ -4,7 +4,7 @@ from ViTRegressor import ViTRegressor
 import TreeDataset
 from math import sqrt
 from tqdm import tqdm
-from utilities import train_model, plot_best_losses
+from utilities import train_model, plot_best_losses, plot_regression
 import argparse
 import numpy as np
 import os
@@ -97,15 +97,5 @@ if __name__ == "__main__":
                      loss_lists['val_losses'], 
                      loss_lists['test_loss'], 
                      loss_lists['early_stop_epoch'])
-
-    def plot_regression(y_true, y_pred):
-        plt.figure(figsize=(8, 6))
-        plt.scatter(y_true, y_pred, alpha=0.5)
-        plt.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], 'r--', lw=2)
-        plt.xlabel('True Values')
-        plt.ylabel('Predicted Values')
-        plt.title('Regression Plot')
-        plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'regression_plot.png'), dpi=300, bbox_inches='tight')
-        plt.show()
 
     plot_regression(y_true, y_hat)

@@ -94,3 +94,13 @@ def plot_best_losses(best_train_losses, best_val_losses, test_loss, early_stop_e
     plt.legend()
     plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'loss_plot.png'), dpi=300, bbox_inches='tight')
     plt.show()
+
+def plot_regression(y_true, y_pred):
+    plt.figure(figsize=(8, 6))
+    plt.scatter(y_true, y_pred, alpha=0.5)
+    plt.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], 'r--', lw=2)
+    plt.xlabel('True Values')
+    plt.ylabel('Predicted Values')
+    plt.title('Regression Plot')
+    plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'regression_plot.png'), dpi=300, bbox_inches='tight')
+    plt.show()
